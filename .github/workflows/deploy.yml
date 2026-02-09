@@ -24,6 +24,7 @@ jobs:
             cd /home/ubuntu/app
             git pull
             docker build -t devops-app .
-            docker stop $(docker ps -q --filter ancestor=devops-app) || true
-            docker run -d -p 8000:8000 devops-app
+            ids=$(docker ps -q --filter ancestor=devops-app); [ -n "$ids" ] && docker stop $ids
+            docker rm -f devops-app 2>/dev/null || true
+            docker run -d --name devops-app -p 8000:8000 devops-app
 
