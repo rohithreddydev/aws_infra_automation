@@ -1,0 +1,29 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+      - name: SSH and deploy
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.EC2_KEY }}
+          script: |
+            cd /home/ubuntu/app
+            git pull
+            docker build -t devops-app .
+            docker stop $(docker ps -q --filter ancestor=devops-app) || true
+            docker run -d -p 8000:8000 devops-app
+
